@@ -61,7 +61,6 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 	}
 
 	function test_val() {
-		$this->assertInstanceOf(StatsdProfile::class, StatsdProfile::getInstance());
 		pf_value('test_val1',1);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
