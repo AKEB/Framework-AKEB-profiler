@@ -1,0 +1,34 @@
+{
+	"authors": [
+		{
+			"email": "babadzhanyan@corp.mail.ru",
+			"name": "Vadim Babajanyan",
+			"role": "Lead"
+		}
+	],
+	"autoload": {
+		"classmap": [
+			"./src/"
+		],
+		"files": [
+			"src/Profiler.php"
+		]
+	},
+	"description": "",
+	"license": "BSD",
+	"name": "akeb/profiler",
+	"support": {
+		"email": "babadzhanyan@corp.mail.ru",
+		"issues": "https://git.terrhq.ru/v.babajanyan/profiler/issues",
+		"wiki": "https://git.terrhq.ru/v.babajanyan/profiler/wiki/",
+		"source": "https://git.terrhq.ru/v.babajanyan/profiler"
+	},
+	"type": "library",
+	"require": {
+		"php": "^5.4|^7.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^4|^5.7",
+		"phpmd/phpmd": "@stable"
+	}
+}
