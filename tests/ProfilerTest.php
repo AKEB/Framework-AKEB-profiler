@@ -27,7 +27,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 	}
 
 	function test_inc() {
-		$this->assertInstanceOf(StatsdProfile::class, StatsdProfile::getInstance());
+		$this->assertInstanceOf('AKEB\profiler\StatsdProfile', StatsdProfile::getInstance());
 		pf_inc('test1');
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
