@@ -1,4 +1,4 @@
-<?php //$Id:$
+<?php
 
 use AKEB\profiler\StatsdProfile;
 

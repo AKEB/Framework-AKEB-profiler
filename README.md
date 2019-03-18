@@ -1,4 +1,4 @@
-# Logger
+# Profiler
 
 composer project akeb/profiler
 
@@ -22,7 +22,7 @@ or
 ```
 {
 	"require": {
-		"akeb/logger": "^1.0.0"
+		"akeb/profiler": "^1.0.0"
 	},
 	"repositories": [
 		{
