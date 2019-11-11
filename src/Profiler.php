@@ -23,8 +23,9 @@ function pf_timer_set($key, $value, $accuracy=1) {
 	StatsdProfile::getInstance()->timer_set($key, $value, $accuracy);
 }
 
-function pf_flush() {
+function pf_flush($debug=false) {
 	$data = [];
+	StatsdProfile::getInstance()->setDebug($debug);
 	StatsdProfile::getInstance()->flush($data);
 	$data = null;
 }
