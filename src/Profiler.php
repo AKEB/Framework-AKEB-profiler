@@ -7,6 +7,10 @@ function pf_inc($key, $value = 1, $accuracy=1) {
 	StatsdProfile::getInstance()->increment($key, $value, $accuracy);
 }
 
+function pf_gauge($key, $value, $accuracy=1) {
+	StatsdProfile::getInstance()->gauge($key, $value, $accuracy);
+}
+
 function pf_value($key, $value, $accuracy=1) {
 	StatsdProfile::getInstance()->value($key, $value, $accuracy);
 }

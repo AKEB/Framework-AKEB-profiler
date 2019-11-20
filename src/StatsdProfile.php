@@ -15,6 +15,7 @@ class StatsdProfile {
 	private $data = [];
 	private $counters = [];
 	private $timings = [];
+	private $gauges = [];
 	private $values = [];
 	private $accuracies = [];
 	private $debug = false;
@@ -29,6 +30,20 @@ class StatsdProfile {
 	public function increment($key, $value = 1, $accuracy=1) {
 		if (!isset($this->counters[$key])) $this->counters[$key] = intval($value);
 		else $this->counters[$key] += intval($value);
+		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
+		else unset($this->accuracies[$key]);
+	}
+
+	public function gauge($key, $value, $accuracy=1) {
+		if (is_string($value)) {
+			$sign = substr($value,0,1);
+			$val = intval(substr($value,1));
+			if ($sign == '+') {
+				$this->gauges[$key] += $val;
+			} elseif ($sign == '-') {
+				$this->gauges[$key] -= $val;
+			}
+		} else $this->gauges[$key] = $value;
 		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
 		else unset($this->accuracies[$key]);
 	}
@@ -86,7 +101,8 @@ class StatsdProfile {
 	public function flush(&$data) {
 		foreach ($this->timings  as $key => $_)	$this->timer_stop($key);
 		foreach ($this->counters as $key => $value) $this->add($key, $value, 'c');
-		foreach ($this->values 	 as $key => $value) $this->add($key, $value, 'g');
+		foreach ($this->values 	 as $key => $value) $this->add($key, $value, 's');
+		foreach ($this->gauges 	 as $key => $value) $this->add($key, $value, 'g');
 
 		if (!$this->data) return;
 		$data = $this->data;
@@ -108,29 +124,7 @@ class StatsdProfile {
 				error_log(sprintf('Error sending to the statsd socket [%s]', $e->getMessage()));
 			}
 		}
-		if (defined('STATSD_HOST2') && STATSD_HOST2) {
-			try {
-				$fp = fsockopen("udp://" . STATSD_HOST2, STATSD_PORT2, $errno, $errstr);
-				if (!$fp) {
-					error_log(sprintf('Connecting to the statsd2 socket failed %s %s', $errno, $errstr));
-					return;
-				}
-				foreach ($this->data as $message) {
-					if ($this->debug) {
-						error_log('write '.$message);
-					}
-					$res = fwrite($fp, $message);
-					if ($res <= 0 || $res !== strlen($message)) {
-						error_log(sprintf('Error sending %s to the statsd2 socket', trim($message)));
-					}
-				}
-				fclose($fp);
-			} catch (\Exception $e) {
-				error_log(sprintf('Error sending to the statsd2 socket [%s]', $e->getMessage()));
-			}
-		}
-
 		// очищаем
-		$this->data = $this->counters = $this->values = $this->accuracies = [];
+		$this->data = $this->counters = $this->values = $this->accuracies = $this->gauges = [];
 	}
 }

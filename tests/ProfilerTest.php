@@ -18,6 +18,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 	function test_functions() {
 		$this->assertTrue(function_exists('pf_inc'));
 		$this->assertTrue(function_exists('pf_value'));
+		$this->assertTrue(function_exists('pf_gauge'));
 		$this->assertTrue(function_exists('pf_timer_start'));
 		$this->assertTrue(function_exists('pf_timer_stop'));
 		$this->assertTrue(function_exists('pf_timer_set'));
@@ -64,17 +65,48 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_value('test_val1',1);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val1:1|g');
+		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val1:1|s');
 
 		pf_value('test_val2', 4);
 		pf_value('test_val2', 3);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val2:3|g');
+		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val2:3|s');
 
 		$TrueCounts = 0;
 		for($i=1;$i<=100;$i++) {
 			pf_value('test_val3', $i, 0.5);
+			$data = [];
+			StatsdProfile::getInstance()->flush($data);
+			if (isset($data[0]) && $data[0]) $TrueCounts++;
+		}
+		$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+	}
+
+	function test_gauge() {
+		pf_gauge('test_gauge1',1);
+		$data = [];
+		StatsdProfile::getInstance()->flush($data);
+		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge1:1|g');
+
+		pf_gauge('test_gauge2', 4);
+		pf_gauge('test_gauge2', 3);
+		$data = [];
+		StatsdProfile::getInstance()->flush($data);
+		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge2:3|g');
+
+		pf_gauge('test_gauge2', 3);
+		pf_gauge('test_gauge2', '+3');
+		pf_gauge('test_gauge2', '-1');
+		pf_gauge('test_gauge2', '+abs');
+		$data = [];
+		StatsdProfile::getInstance()->flush($data);
+		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge2:5|g');
+
+
+		$TrueCounts = 0;
+		for($i=1;$i<=100;$i++) {
+			pf_gauge('test_gauge3', $i, 0.5);
 			$data = [];
 			StatsdProfile::getInstance()->flush($data);
 			if (isset($data[0]) && $data[0]) $TrueCounts++;
