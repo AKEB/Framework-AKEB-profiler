@@ -11,7 +11,7 @@ Composer config
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://git.terrhq.ru/v.babajanyan/profiler"
+			"url": "https://gitlab.pvt/gapa/mrgs/profiler"
 		}
 	]
 }
