@@ -1,0 +1,36 @@
+before_script:
+  - bash ci/docker_install.sh
+  - export https_proxy=http://m100.cache.pvt:3128
+  - export http_proxy=http://m100.cache.pvt:3128
+  - export PHP_ENABLE_XDEBUG=1
+  - curl -s http://getcomposer.org/installer | php
+  - if [ -n "$GH_TOKEN" ]; then composer config github-oauth.github.com ${GH_TOKEN}; fi;
+  - php composer.phar install --prefer-source --no-interaction
+
+test:7.0:
+  image: php:7.0
+  tags:
+    - mrgs
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never -c phpunit.xml
+
+test:7.1:
+  image: php:7.1
+  tags:
+    - mrgs
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never -c phpunit.xml
+
+test:7.2:
+  image: php:7.2
+  tags:
+    - mrgs
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never -c phpunit.xml
+
+test:7.3:
+  image: php:7.3
+  tags:
+    - mrgs
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never -c phpunit.xml
