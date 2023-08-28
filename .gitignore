@@ -2,3 +2,11 @@ composer.lock
 composer.phar
 /vendor/
 /tests/logs/
+
+/vendor*/
+composer.lock.*
+
+/docker/composer/
+.phpunit.result.cache
+/.phpunit.cache/
+*.bak

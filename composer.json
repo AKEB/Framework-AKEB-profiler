@@ -1,8 +1,8 @@
 {
 	"authors": [
 		{
-			"email": "babadzhanyan@corp.mail.ru",
-			"name": "Vadim Babajanyan",
+			"email": "vadim.babadzhanyan@my.games",
+			"name": "Vadim Babadzhanyan",
 			"role": "Lead"
 		}
 	],
@@ -18,17 +18,16 @@
 	"license": "Apache-2.0",
 	"name": "akeb/profiler",
 	"support": {
-		"email": "babadzhanyan@corp.mail.ru",
-		"issues": "https://git.terrhq.ru/v.babajanyan/profiler/issues",
-		"wiki": "https://git.terrhq.ru/v.babajanyan/profiler/wiki/",
-		"source": "https://git.terrhq.ru/v.babajanyan/profiler"
+		"email": "vadim.babadzhanyan@my.games",
+		"issues": "https://github.com/AKEB/profiler/issues",
+		"wiki": "https://github.com/AKEB/profiler/wiki",
+		"source": "https://github.com/AKEB/profiler"
 	},
 	"type": "library",
 	"require": {
-		"php": "^5.4|^7.0"
+		"php": ">=7.1"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^4|^5.7",
-		"phpmd/phpmd": "@stable"
+		"phpunit/phpunit": ">=4"
 	}
 }

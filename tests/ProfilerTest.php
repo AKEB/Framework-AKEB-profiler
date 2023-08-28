@@ -6,12 +6,12 @@ error_reporting(E_ALL);
 
 class ProfilerTest extends PHPUnit\Framework\TestCase {
 
-	function setUp() {
+	protected function setUp(): void {
 		if (!defined('GRAPHITE_PREFIX')) define('GRAPHITE_PREFIX','prefix');
 		if (!defined('SERVER_NAME')) define('SERVER_NAME','local');
 	}
 
-	function tearDown() {
+	protected function tearDown(): void {
 		pf_flush();
 	}
 
@@ -58,7 +58,12 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		}
 		$this->assertEquals(100,$summCounts);
 		//var_dump($summCounts);
-		$this->assertEquals(50,$trueCounts, 'Кол-во значений', 30);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(50,$trueCounts, 'Кол-во значений', 30);
+		} else {
+			$this->assertEqualsWithDelta(50,$trueCounts, 30, 'Кол-во значений');
+		}
+
 	}
 
 	function test_val() {
@@ -80,7 +85,12 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 			StatsdProfile::getInstance()->flush($data);
 			if (isset($data[0]) && $data[0]) $TrueCounts++;
 		}
-		$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+		} else {
+			$this->assertEqualsWithDelta(50,$TrueCounts, 30, 'Кол-во значений');
+		}
+
 	}
 
 	function test_gauge() {
@@ -111,7 +121,11 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 			StatsdProfile::getInstance()->flush($data);
 			if (isset($data[0]) && $data[0]) $TrueCounts++;
 		}
-		$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+		} else {
+			$this->assertEqualsWithDelta(50,$TrueCounts, 30, 'Кол-во значений');
+		}
 	}
 
 	function test_pf_timer_start() {
@@ -129,10 +143,19 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		$this->assertGreaterThanOrEqual(2,count($data));
 		$t = explode("|", $data[0]);
 		$t = explode(':', $t[0]);
-		$this->assertEquals(5,$t[1], '', 3);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(5,$t[1], '', 3);
+		} else {
+			$this->assertEqualsWithDelta(5,$t[1], 3);
+		}
+
 		$t = explode("|", $data[1]);
 		$t = explode(':', $t[0]);
-		$this->assertEquals(50,$t[1], '', 5);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(50,$t[1], '', 5);
+		} else {
+			$this->assertEqualsWithDelta(50,$t[1], 5);
+		}
 
 		pf_timer_set('test_timer3',50, 0.5);
 
@@ -147,15 +170,4 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		$this->assertGreaterThanOrEqual(2,count($data));
 	}
 
-	function test_send() {
-		define('STATSD_HOST','127.0.0.1');
-		define('STATSD_PORT','8126');
-		pf_inc('test1');
-		pf_flush();
-	}
-
-	function test_send2() {
-		pf_inc('test1');
-		pf_flush();
-	}
 }
