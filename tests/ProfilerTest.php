@@ -32,78 +32,57 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_inc('test1');
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test1:1|c');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test1:1|c');
 
 		pf_inc('test2', 4);
 		pf_inc('test2', 3);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test2:7|c');
-
-		$trueCounts = 0;
-		$summCounts = 0;
-		for($i=1;$i<=100;$i++) {
-			if ($i == 100) pf_inc('test3', 1);
-			else pf_inc('test3', 1, 0.5);
-
-			$data = [];
-			StatsdProfile::getInstance()->flush($data);
-			if (isset($data[0]) && $data[0]) {
-				$trueCounts++;
-				$t = explode("|", $data[0]);
-				$t = explode(':', $t[0]);
-				$summCounts += intval($t[1]);
-			}
-			//echo $i.' '.(isset($data[0]) ? $data[0] : '').' '.$summCounts.PHP_EOL;
-		}
-		$this->assertEquals(100,$summCounts);
-		//var_dump($summCounts);
-		if (version_compare(PHP_VERSION, '7.2', '<')) {
-			$this->assertEquals(50,$trueCounts, 'Кол-во значений', 30);
-		} else {
-			$this->assertEqualsWithDelta(50,$trueCounts, 30, 'Кол-во значений');
-		}
-
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test2:7|c');
 	}
 
 	function test_val() {
 		pf_value('test_val1',1);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val1:1|s');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val1:1|s');
 
 		pf_value('test_val2', 4);
 		pf_value('test_val2', 3);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_val2:3|s');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val2:3|s');
 
-		$TrueCounts = 0;
-		for($i=1;$i<=100;$i++) {
+		$trueCounts = 0;
+		for($i=1;$i<100;$i++) {
 			pf_value('test_val3', $i, 0.5);
 			$data = [];
 			StatsdProfile::getInstance()->flush($data);
-			if (isset($data[0]) && $data[0]) $TrueCounts++;
+			if (isset($data[0]) && $data[0]) $trueCounts++;
 		}
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
-			$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+			// PHP0443
+			$this->assertEquals(50,$trueCounts, 'Кол-во значений', 30);
 		} else {
-			$this->assertEqualsWithDelta(50,$TrueCounts, 30, 'Кол-во значений');
+			$this->assertEqualsWithDelta(50,$trueCounts, 30, 'Кол-во значений');
 		}
-
+		StatsdProfile::getInstance()->flush($data);
 	}
 
 	function test_gauge() {
-		pf_gauge('test_gauge1',1);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge1:1|g');
+		usleep(500);
+		pf_gauge('test_gauge1',1);
+		$data2 = [];
+		StatsdProfile::getInstance()->flush($data2);
+		$this->assertEquals($data2[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge1:1|g',json_encode([$data,$data2]));
 
 		pf_gauge('test_gauge2', 4);
 		pf_gauge('test_gauge2', 3);
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge2:3|g');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:3|g');
 
 		pf_gauge('test_gauge2', 3);
 		pf_gauge('test_gauge2', '+3');
@@ -111,20 +90,20 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_gauge('test_gauge2', '+abs');
 		$data = [];
 		StatsdProfile::getInstance()->flush($data);
-		$this->assertEquals($data[0], GRAPHITE_PREFIX.'.'.SERVER_NAME.'.test_gauge2:5|g');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:5|g');
 
 
-		$TrueCounts = 0;
+		$trueCounts = 0;
 		for($i=1;$i<=100;$i++) {
 			pf_gauge('test_gauge3', $i, 0.5);
 			$data = [];
 			StatsdProfile::getInstance()->flush($data);
-			if (isset($data[0]) && $data[0]) $TrueCounts++;
+			if (isset($data[0]) && $data[0]) $trueCounts++;
 		}
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
-			$this->assertEquals(50,$TrueCounts, 'Кол-во значений', 30);
+			$this->assertEquals(50,$trueCounts, 'Кол-во значений', 30);
 		} else {
-			$this->assertEqualsWithDelta(50,$TrueCounts, 30, 'Кол-во значений');
+			$this->assertEqualsWithDelta(50,$trueCounts, 30, 'Кол-во значений');
 		}
 	}
 

@@ -73,7 +73,7 @@ class StatsdProfile {
 	}
 
 	private function add($key, $value, $type) {
-		$accuracy = isset($this->accuracies[$key]) ? $this->accuracies[$key] : null;
+		$accuracy = isset($this->accuracies[$key]) ? $this->accuracies[$key] : 0;
 		$newKey = '';
 		if (defined('GRAPHITE_PREFIX')) {
 			$newKey .= constant('GRAPHITE_PREFIX').'.';
@@ -87,7 +87,7 @@ class StatsdProfile {
 			return;
 		}
 		if ($accuracy <=0 || $accuracy >= 1 || (mt_rand(0, mt_getrandmax()) / mt_getrandmax()) <= $accuracy) {
-			$this->data[]= sprintf("%s:%s|%s%s", $newKey, $value, $type, $accuracy ? '|@'.$accuracy : '');
+			$this->data[]= sprintf("%s:%s|%s%s", $newKey, strval($value), $type, $accuracy ? '|@'.$accuracy : '');
 		}
 	}
 
@@ -104,22 +104,23 @@ class StatsdProfile {
 		foreach ($this->values 	 as $key => $value) $this->add($key, $value, 's');
 		foreach ($this->gauges 	 as $key => $value) $this->add($key, $value, 'g');
 
-		if (!$this->data) return;
+		if (!$this->data) {
+			$this->data = $this->counters = $this->values = $this->accuracies = $this->gauges = [];
+			return;
+		}
 		$data = $this->data;
 		if (defined('STATSD_HOST') && constant('STATSD_HOST')) {
 			try {
 				$fp = fsockopen("udp://" . constant('STATSD_HOST'), constant('STATSD_PORT'), $errno, $errstr);
 				if (!$fp) {
-					error_log(sprintf('Connecting to the statsd socket failed %s %s', $errno, $errstr));
-					return;
-				}
-				foreach ($this->data as $message) {
-					$res = fwrite($fp, $message);
-					if ($res <= 0 || $res !== strlen($message)) {
-						error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
+					foreach ($this->data as $message) {
+						$res = fwrite($fp, $message);
+						if ($res <= 0 || $res !== strlen($message)) {
+							error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
+						}
 					}
+					fclose($fp);
 				}
-				fclose($fp);
 			} catch (\Exception $e) {
 				error_log(sprintf('Error sending to the statsd socket [%s]', $e->getMessage()));
 			}

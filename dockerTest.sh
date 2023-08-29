@@ -1,8 +1,10 @@
 #!/bin/bash
 
 versions='7.1 7.2 7.3 7.4 8.0 8.1 8.2'
-#versions='7.3 7.4'
-rm -rf ${PWD}/vendor/ ${PWD}/composer.lock > /dev/null 2>&1
+
+mv ${PWD}/composer.lock ${PWD}/composer.lock.local > /dev/null 2>&1
+mv ${PWD}/vendor/ ${PWD}/vendor.local/ > /dev/null 2>&1
+
 rm -rf ${PWD}/.phpunit.cache ${PWD}/.phpunit.result.cache > /dev/null 2>&1
 mkdir "${PWD}/docker/composer/" > /dev/null 2>&1
 
@@ -31,3 +33,6 @@ for version in ${versions}; do
 	mv ${PWD}/composer.lock ${lock_file} > /dev/null 2>&1
 	mv ${PWD}/vendor/ ${composer_folder} > /dev/null 2>&1
 done;
+
+mv ${PWD}/composer.lock.local ${PWD}/composer.lock > /dev/null 2>&1
+mv ${PWD}/vendor.local/ ${PWD}/vendor/ > /dev/null 2>&1
