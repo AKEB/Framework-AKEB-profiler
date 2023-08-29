@@ -95,9 +95,6 @@ class StatsdProfile {
 		$this->debug = $debug;
 	}
 
-	/**
-	 * @SuppressWarnings(PHPMD.UnusedLocalVariable)
-	 */
 	public function flush(&$data) {
 		foreach ($this->timings  as $key => $_)	$this->timer_stop($key);
 		foreach ($this->counters as $key => $value) $this->add($key, $value, 'c');

@@ -15,7 +15,10 @@ trim_trailing_whitespace = true
 insert_final_newline = false
 
 [ProfilerTest.php]
-php_diagnostic_php0443 = false
+php_diagnostic_php0443 = off
+
+[vendor/]
+php_diagnostic = off
 
 [*.md]
 indent_style = space
