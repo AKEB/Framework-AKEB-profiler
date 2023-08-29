@@ -76,10 +76,10 @@ class StatsdProfile {
 		$accuracy = isset($this->accuracies[$key]) ? $this->accuracies[$key] : null;
 		$newKey = '';
 		if (defined('GRAPHITE_PREFIX')) {
-			$newKey .= GRAPHITE_PREFIX.'.';
+			$newKey .= constant('GRAPHITE_PREFIX').'.';
 		}
 		if (defined('SERVER_NAME')) {
-			$newKey .= SERVER_NAME.'.';
+			$newKey .= constant('SERVER_NAME').'.';
 		}
 		$newKey .= str_replace(':','',$key);
 		// Не отсылать сообщения которые заканчиваются точкой!
@@ -106,9 +106,9 @@ class StatsdProfile {
 
 		if (!$this->data) return;
 		$data = $this->data;
-		if (defined('STATSD_HOST') && STATSD_HOST) {
+		if (defined('STATSD_HOST') && constant('STATSD_HOST')) {
 			try {
-				$fp = fsockopen("udp://" . STATSD_HOST, STATSD_PORT, $errno, $errstr);
+				$fp = fsockopen("udp://" . constant('STATSD_HOST'), constant('STATSD_PORT'), $errno, $errstr);
 				if (!$fp) {
 					error_log(sprintf('Connecting to the statsd socket failed %s %s', $errno, $errstr));
 					return;
