@@ -9,12 +9,12 @@ Composer config
 ```json
 {
     "require": {
-        "akeb/profiler": "^1.1.0"
+        "akeb/profiler": "^1.1.3"
     },
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/AKEB/profiler"
+            "url": "https://github.com/AKEB/Framework-AKEB-profiler"
         }
     ]
 }

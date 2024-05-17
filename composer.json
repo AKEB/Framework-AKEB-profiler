@@ -1,7 +1,7 @@
 {
 	"authors": [
 		{
-			"email": "vadim.babadzhanyan@my.games",
+			"email": "vadimakeb@gmail.com",
 			"name": "Vadim Babadzhanyan",
 			"role": "Lead"
 		}
@@ -18,16 +18,16 @@
 	"license": "Apache-2.0",
 	"name": "akeb/profiler",
 	"support": {
-		"email": "vadim.babadzhanyan@my.games",
-		"issues": "https://github.com/AKEB/profiler/issues",
-		"wiki": "https://github.com/AKEB/profiler/wiki",
-		"source": "https://github.com/AKEB/profiler"
+		"email": "vadimakeb@gmail.com",
+		"issues": "https://github.com/AKEB/Framework-AKEB-profiler/issues",
+		"wiki": "https://github.com/AKEB/Framework-AKEB-profiler/wiki",
+		"source": "https://github.com/AKEB/Framework-AKEB-profiler"
 	},
 	"type": "library",
 	"require": {
 		"php": ">=7.1"
 	},
 	"require-dev": {
-		"phpunit/phpunit": ">=4"
+		"phpunit/phpunit": "@stable"
 	}
 }
