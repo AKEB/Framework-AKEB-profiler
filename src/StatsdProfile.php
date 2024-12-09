@@ -111,18 +111,23 @@ class StatsdProfile {
 			try {
 				$fp = fsockopen("udp://" . constant('STATSD_HOST'), constant('STATSD_PORT'), $errno, $errstr);
 				if (!$fp) {
-					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Connect");
-					foreach ($this->data as $message) {
-						$res = fwrite($fp, $message);
-						if ($res <= 0 || $res !== strlen($message)) {
-							error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
-						}
-					}
-					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Send Data to Statsd");
-					fclose($fp);
-				} else {
-					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Error: " . $errno . ": " . $errstr);
+					error_log(sprintf('Connecting to the statsd socket failed %s %s', $errno, $errstr));
+					return;
 				}
+				if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Connect");
+				foreach ($this->data as $message) {
+					$res = fwrite($fp, $message);
+					if ($this->debug) {
+						error_log(
+							sprintf("Send to statsd %s message: '%s'", constant('STATSD_HOST') . ':' . constant('STATSD_PORT'), $message)
+						);
+					}
+					if ($res <= 0 || $res !== strlen($message)) {
+						error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
+					}
+				}
+				if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Send Data to Statsd");
+				fclose($fp);
 			} catch (\Exception $e) {
 				error_log(sprintf('Error sending to the statsd socket [%s]', $e->getMessage()));
 			}
