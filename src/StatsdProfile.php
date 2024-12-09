@@ -96,6 +96,7 @@ class StatsdProfile {
 	}
 
 	public function flush(&$data) {
+		if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() called");
 		foreach ($this->timings  as $key => $_)	$this->timer_stop($key);
 		foreach ($this->counters as $key => $value) $this->add($key, $value, 'c');
 		foreach ($this->values 	 as $key => $value) $this->add($key, $value, 's');
@@ -110,17 +111,23 @@ class StatsdProfile {
 			try {
 				$fp = fsockopen("udp://" . constant('STATSD_HOST'), constant('STATSD_PORT'), $errno, $errstr);
 				if (!$fp) {
+					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Connect");
 					foreach ($this->data as $message) {
 						$res = fwrite($fp, $message);
 						if ($res <= 0 || $res !== strlen($message)) {
 							error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
 						}
 					}
+					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Send Data to Statsd");
 					fclose($fp);
+				} else {
+					if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Error: " . $errno . ": " . $errstr);
 				}
 			} catch (\Exception $e) {
 				error_log(sprintf('Error sending to the statsd socket [%s]', $e->getMessage()));
 			}
+		} else {
+			if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Error: Not defined STATSD_HOST");
 		}
 		// очищаем
 		$this->data = $this->counters = $this->values = $this->accuracies = $this->gauges = [];
