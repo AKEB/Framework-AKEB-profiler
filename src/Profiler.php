@@ -1,36 +1,36 @@
 <?php
 
-use AKEB\profiler\StatsdProfile;
+use AKEB\profiler\Profile;
 
 // PHP-часть метрик, отправляется для агрегации в statsd
 function pf_inc($key, $value = 1, $accuracy=1) {
-	StatsdProfile::getInstance()->increment($key, $value, $accuracy);
+	Profile::getInstance()->increment($key, $value, $accuracy);
 }
 
 function pf_gauge($key, $value, $accuracy=1) {
-	StatsdProfile::getInstance()->gauge($key, $value, $accuracy);
+	Profile::getInstance()->gauge($key, $value, $accuracy);
 }
 
 function pf_value($key, $value, $accuracy=1) {
-	StatsdProfile::getInstance()->value($key, $value, $accuracy);
+	Profile::getInstance()->value($key, $value, $accuracy);
 }
 
 function pf_timer_start($key, $accuracy=1) {
-	StatsdProfile::getInstance()->timer_start($key, $accuracy);
+	Profile::getInstance()->timer_start($key, $accuracy);
 }
 
 function pf_timer_stop($key, $accuracy=1) {
-	StatsdProfile::getInstance()->timer_stop($key, $accuracy);
+	Profile::getInstance()->timer_stop($key, $accuracy);
 }
 
 function pf_timer_set($key, $value, $accuracy=1) {
-	StatsdProfile::getInstance()->timer_set($key, $value, $accuracy);
+	Profile::getInstance()->timer_set($key, $value, $accuracy);
 }
 
 function pf_flush($debug=false) {
 	$data = [];
-	StatsdProfile::getInstance()->setDebug($debug);
-	StatsdProfile::getInstance()->flush($data);
+	Profile::getInstance()->setDebug($debug);
+	Profile::getInstance()->flush($data);
 	$data = null;
 }
 
@@ -44,6 +44,6 @@ function pf_db_stop($table_name) {
 
 register_shutdown_function(function() {
 	$data = [];
-	StatsdProfile::getInstance()->flush($data);
+	Profile::getInstance()->flush($data);
 	$data = null;
 });

@@ -10,3 +10,4 @@ composer.lock.*
 .phpunit.result.cache
 /.phpunit.cache/
 *.bak
+.idea

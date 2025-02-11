@@ -1,6 +1,6 @@
 <?php
 
-use AKEB\profiler\StatsdProfile;
+use AKEB\profiler\StatsdProfile as Profile;
 
 error_reporting(E_ALL);
 
@@ -28,36 +28,36 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 	}
 
 	function test_inc() {
-		$this->assertInstanceOf('AKEB\profiler\StatsdProfile', StatsdProfile::getInstance());
+		$this->assertInstanceOf('AKEB\profiler\Profile', Profile::getInstance());
 		pf_inc('test1');
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test1:1|c');
 
 		pf_inc('test2', 4);
 		pf_inc('test2', 3);
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test2:7|c');
 	}
 
 	function test_val() {
 		pf_value('test_val1',1);
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val1:1|s');
 
 		pf_value('test_val2', 4);
 		pf_value('test_val2', 3);
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val2:3|s');
 
 		$trueCounts = 0;
 		for($i=1;$i<100;$i++) {
 			pf_value('test_val3', $i, 0.5);
 			$data = [];
-			StatsdProfile::getInstance()->flush($data);
+			Profile::getInstance()->flush($data);
 			if (isset($data[0]) && $data[0]) $trueCounts++;
 		}
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
@@ -66,22 +66,22 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		} else {
 			$this->assertEqualsWithDelta(50,$trueCounts, 30, 'Кол-во значений');
 		}
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 	}
 
 	function test_gauge() {
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		usleep(500);
 		pf_gauge('test_gauge1',1);
 		$data2 = [];
-		StatsdProfile::getInstance()->flush($data2);
+		Profile::getInstance()->flush($data2);
 		$this->assertEquals($data2[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge1:1|g',json_encode([$data,$data2]));
 
 		pf_gauge('test_gauge2', 4);
 		pf_gauge('test_gauge2', 3);
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:3|g');
 
 		pf_gauge('test_gauge2', 3);
@@ -89,7 +89,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_gauge('test_gauge2', '-1');
 		pf_gauge('test_gauge2', '+abs');
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:5|g');
 
 
@@ -97,7 +97,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		for($i=1;$i<=100;$i++) {
 			pf_gauge('test_gauge3', $i, 0.5);
 			$data = [];
-			StatsdProfile::getInstance()->flush($data);
+			Profile::getInstance()->flush($data);
 			if (isset($data[0]) && $data[0]) $trueCounts++;
 		}
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
@@ -109,7 +109,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 
 	function test_pf_timer_start() {
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		pf_timer_start('test_timer1');
 		usleep(5000);
 		pf_timer_stop('test_timer1');
@@ -117,7 +117,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		usleep(50000);
 		pf_timer_stop('test_timer2');
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertNotEmpty($data);
 		$this->assertGreaterThanOrEqual(2,count($data));
 		$t = explode("|", $data[0]);
@@ -145,7 +145,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		usleep(5000);
 		pf_db_stop('testTable');
 		$data = [];
-		StatsdProfile::getInstance()->flush($data);
+		Profile::getInstance()->flush($data);
 		$this->assertGreaterThanOrEqual(2,count($data));
 	}
 
