@@ -26,7 +26,7 @@ class Profile {
 
 	private static $instance;
 
-	public function __construct(?FormatterInterface $formatter = null)
+	private function __construct(?FormatterInterface $formatter = null)
 	{
 		if ($formatter === null) {
 			$this->formatter = new StatsdFormatter();
@@ -47,7 +47,7 @@ class Profile {
 			if(is_string($formatter) && class_exists($formatter)){
 				if(defined('PROFILER_FORMATTER_OPTIONS')){
 					$options = constant('PROFILER_FORMATTER_OPTIONS');
-					$options = is_array($options) ?? [$options];
+					$options = is_array($options) ? $options : [$options];
 					return new $formatter(...$options); // Возможно стоить сделать аккуратнее
 				}
 				return new $formatter();
@@ -56,7 +56,7 @@ class Profile {
 				return $formatter;
 			}
 		}
-		return null;
+		return new StatsdFormatter();
 	}
 
 	public function increment($key, $value = 1, $accuracy=1) {
@@ -108,7 +108,7 @@ class Profile {
 		$accuracy = isset($this->accuracies[$key]) ? $this->accuracies[$key] : 0;
 		$newKey = '';
 
-		$formattedDataString = $this->formatter->format($key, $value, $accuracy);
+		$formattedDataString = $this->formatter->format($key, $value, $type, $accuracy);
 		// Не отсылать сообщения которые заканчиваются точкой!
 		if ($formattedDataString === null) {
 			return;

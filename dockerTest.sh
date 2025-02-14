@@ -24,7 +24,8 @@ for version in ${versions}; do
 	CMD="${CMD} composer update --prefer-install=auto --no-interaction 1>/dev/null 2>&1;"
 
 	CMD="${CMD} php ./vendor/bin/phpunit "
-	CMD="${CMD} --no-coverage"
+	#CMD="${CMD} --no-coverage"
+	CMD="${CMD} --process-isolation"
 	CMD="${CMD} -c ./phpunit_${version}.xml"
 
 	docker run --rm -v "$PWD":/opt -w /opt akeb/nginx-php-fpm:${version} /bin/bash -c "${CMD}"

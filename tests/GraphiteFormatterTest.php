@@ -4,54 +4,43 @@ use AKEB\profiler\Profile;
 
 error_reporting(E_ALL);
 
-class ProfilerTest extends PHPUnit\Framework\TestCase {
+class GraphiteFormatterTest extends PHPUnit\Framework\TestCase {
 
 	protected function setUp(): void {
 		if (!defined('GRAPHITE_PREFIX')) define('GRAPHITE_PREFIX','prefix');
 		if (!defined('SERVER_NAME')) define('SERVER_NAME','local');
+		if (!defined('PROFILER_FORMATTER')) define('PROFILER_FORMATTER',\AKEB\profiler\GraphiteFormatter::class);
+		if (!defined('PROFILER_FORMATTER_OPTIONS')) define('PROFILER_FORMATTER_OPTIONS',true);
 	}
 
 	protected function tearDown(): void {
 		pf_flush();
 	}
-
-	function test_functions() {
-		$this->assertTrue(function_exists('pf_inc'));
-		$this->assertTrue(function_exists('pf_value'));
-		$this->assertTrue(function_exists('pf_gauge'));
-		$this->assertTrue(function_exists('pf_timer_start'));
-		$this->assertTrue(function_exists('pf_timer_stop'));
-		$this->assertTrue(function_exists('pf_timer_set'));
-		$this->assertTrue(function_exists('pf_flush'));
-		$this->assertTrue(function_exists('pf_db_start'));
-		$this->assertTrue(function_exists('pf_db_stop'));
-	}
-
 	function test_inc() {
 		$this->assertInstanceOf('AKEB\profiler\Profile', Profile::getInstance());
 		pf_inc('test1');
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test1:1|c');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test1'.';server='.constant('SERVER_NAME').';type=c 1 ' . time());
 
 		pf_inc('test2', 4);
 		pf_inc('test2', 3);
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test2:7|c');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test2'.';server='.constant('SERVER_NAME').';type=c 7 ' . time());
 	}
 
 	function test_val() {
 		pf_value('test_val1',1);
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val1:1|s');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test_val1'.';server='.constant('SERVER_NAME').';type=s 1 ' . time());
 
 		pf_value('test_val2', 4);
 		pf_value('test_val2', 3);
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_val2:3|s');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test_val2'.';server='.constant('SERVER_NAME').';type=s 3 ' . time());
 
 		$trueCounts = 0;
 		for($i=1;$i<100;$i++) {
@@ -76,13 +65,13 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_gauge('test_gauge1',1);
 		$data2 = [];
 		Profile::getInstance()->flush($data2);
-		$this->assertEquals($data2[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge1:1|g',json_encode([$data,$data2]));
+		$this->assertEquals($data2[0], constant('GRAPHITE_PREFIX').'.test_gauge1'.';server='.constant('SERVER_NAME').';type=g 1 ' . time(), json_encode([$data,$data2]));
 
 		pf_gauge('test_gauge2', 4);
 		pf_gauge('test_gauge2', 3);
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:3|g');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test_gauge2'.';server='.constant('SERVER_NAME').';type=g 3 ' . time());
 
 		pf_gauge('test_gauge2', 3);
 		pf_gauge('test_gauge2', '+3');
@@ -90,7 +79,7 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		pf_gauge('test_gauge2', '+abs');
 		$data = [];
 		Profile::getInstance()->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test_gauge2:5|g');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.test_gauge2'.';server='.constant('SERVER_NAME').';type=g 5 ' . time());
 
 
 		$trueCounts = 0;
@@ -120,16 +109,15 @@ class ProfilerTest extends PHPUnit\Framework\TestCase {
 		Profile::getInstance()->flush($data);
 		$this->assertNotEmpty($data);
 		$this->assertGreaterThanOrEqual(2,count($data));
-		$t = explode("|", $data[0]);
-		$t = explode(':', $t[0]);
+		$this->assertStringMatchesFormat('%s;server=%s;type=ms %d %d', $data[0]);
+		$t = explode(" ", $data[0]);
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
 			$this->assertEquals(5,$t[1], '', 3);
 		} else {
 			$this->assertEqualsWithDelta(5,$t[1], 3);
 		}
 
-		$t = explode("|", $data[1]);
-		$t = explode(':', $t[0]);
+		$t = explode(" ", $data[1]);
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
 			$this->assertEquals(50,$t[1], '', 5);
 		} else {

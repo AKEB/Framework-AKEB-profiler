@@ -12,8 +12,10 @@ class GraphiteFormatter implements FormatterInterface
 	 * @var string
 	 */
 	private $prefix = '';
+	private $tagOn;
 	public function __construct(bool $tagOn=true)
 	{
+		$this->tagOn = $tagOn;
 		if (defined('GRAPHITE_PREFIX')) {
 			$this->prefix .= constant('GRAPHITE_PREFIX').'.';
 		}
@@ -22,7 +24,7 @@ class GraphiteFormatter implements FormatterInterface
 			return;
 		}
 		if ($tagOn) {
-			$this->tagsString .= ';' . constant('SERVER_NAME');
+			$this->tagsString .= ';server=' . constant('SERVER_NAME');
 		}
 		else{
 			$this->prefix .=  constant('SERVER_NAME') . '.';
@@ -36,6 +38,11 @@ class GraphiteFormatter implements FormatterInterface
 		if ($newKey !== trim($newKey, '.')) {
 			return null;
 		}
-		return sprintf("%s%s %s %d", $newKey, $this->tagsString, $value, time());
+		$tags = $this->tagsString;
+		if($this->tagOn){
+			$tags .= $accuracy ? ";accuracy=$accuracy" : '';
+			$tags .= $type ? ";type=$type" : '';
+		}
+		return sprintf("%s%s %s %d", $newKey, $tags, $value, time());
 	}
 }
