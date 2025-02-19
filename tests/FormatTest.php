@@ -25,8 +25,8 @@ class FormatTest extends TestCase
 	public function testStatsdFormat($key, $value, $type, $accuracy, array $expectations, $message){
 		$expected = $expectations['statsd'];
 		$formatter = new StatsdFormatter();
-		$data = $formatter->format($key, $value, $type, $accuracy);
-		$this->assertEquals($expected, $data, $message);
+		$formedString = $formatter->format($key, $value, $type, $accuracy);
+		$this->assertEquals($expected, $formedString, $message);
 	}
 
 
@@ -37,10 +37,10 @@ class FormatTest extends TestCase
 	public function testGraphiteFormat($key, $value, $type, $accuracy, array $expectations, $message){
 		$expected = $expectations['graphite'];
 		$formatter = new GraphiteFormatter(false);
-		$data = $formatter->format($key, $value, $type, $accuracy);
-		[$keys, $value, $timestamp] = explode(' ', $data);
+		$formedString = $formatter->format($key, $value, $type, $accuracy);
+		[$keys, $value, $timestamp] = explode(' ', $formedString);
 		$this->assertEqualsWithDelta(time(), $timestamp, 2);
-		$this->assertEquals($expected . ' '. $timestamp, $data, $message);
+		$this->assertEquals($expected . ' '. $timestamp, $formedString, $message);
 	}
 	/**
 	 * @dataProvider dataSet()
@@ -49,10 +49,10 @@ class FormatTest extends TestCase
 	public function testGraphiteOnTagsFormat($key, $value, $type, $accuracy, array $expectations, $message){
 		$expected = $expectations['graphiteOnTags'];
 		$formatter = new GraphiteFormatter(true);
-		$data = $formatter->format($key, $value, $type, $accuracy);
-		[$keysAndTags, $value, $timestamp] = explode(' ', $data);
+		$formedString = $formatter->format($key, $value, $type, $accuracy);
+		[$keysAndTags, $value, $timestamp] = explode(' ', $formedString);
 		$this->assertEqualsWithDelta(time(), $timestamp, 2);
-		$this->assertEquals($expected . ' '. $timestamp, $data, $message);
+		$this->assertEquals($expected . ' '. $timestamp, $formedString, $message);
 	}
 
 	/**

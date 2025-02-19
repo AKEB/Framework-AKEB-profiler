@@ -32,7 +32,7 @@ class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase {
 		$profile = Profile::getInstance();
 		$this->assertNotEquals($statsdProfile, $profile);
 
-		$args = ['test2', 1, 1];
+		$args = ['test2', 10, 1];
 
 		$statsdValue = [];
 		$defaultFormatValue = [];
@@ -68,19 +68,19 @@ class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase {
 
 		$statsdValue = [];
 		$defaultFormatValue = [];
-		$profile->timer_start(...$args);
-		$profile->flush($defaultFormatValue);
-		$statsdProfile->timer_start(...$args);
-		$statsdProfile->flush($statsdValue);
-		$this->assertEquals($defaultFormatValue, $statsdValue);
+		$statsdProfile->timer_start($args[0]);
+		usleep(10000);
+		$statsdProfile->timer_stop($args[0]);
+		$profile->flush($statsdValue);
+		$this->assertNotEmpty($statsdValue);
 
-		$statsdValue = [];
-		$defaultFormatValue = [];
-		$profile->timer_stop(...$args);
-		$profile->flush($defaultFormatValue);
-		$statsdProfile->timer_stop(...$args);
-		$statsdProfile->flush($statsdValue);
-		$this->assertEquals($defaultFormatValue, $statsdValue);
+		$t = explode("|", $statsdValue[0]);
+		$t = explode(':', $t[0]);
+		if (version_compare(PHP_VERSION, '7.2', '<')) {
+			$this->assertEquals(10,$t[1], '', 3);
+		} else {
+			$this->assertEqualsWithDelta(10,$t[1], 3);
+		}
 	}
 
 	function test_inc() {
