@@ -1,140 +1,67 @@
 <?php
-/**
- * You need define next constants:
- *
- * GRAPHITE_PREFIX
- * SERVER_NAME
- * STATSD_HOST
- * STATSD_PORT
- *
- */
+
 namespace AKEB\profiler;
 
+/**
+ * @deprecated use AKEB\profiler\Profile
+ */
+class StatsdProfile
+{
+	private static $profile;
 
-class StatsdProfile {
-	private $data = [];
-	private $counters = [];
-	private $timings = [];
-	private $gauges = [];
-	private $values = [];
-	private $accuracies = [];
-	private $debug = false;
-
-	private static $instance;
-
-	public static function getInstance() {
-		if (!self::$instance) self::$instance = new static();
-		return self::$instance;
+	public static function getInstance()
+	{
+		if (!self::$profile) self::$profile = Profile::getInstance();
+		return self::$profile;
 	}
 
-	public function increment($key, $value = 1, $accuracy=1) {
-		if (!isset($this->counters[$key])) $this->counters[$key] = intval($value);
-		else $this->counters[$key] += intval($value);
-		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-		else unset($this->accuracies[$key]);
+	public function __construct()
+	{
+		self::$profile = Profile::getInstance();
 	}
 
-	public function gauge($key, $value, $accuracy=1) {
-		if (is_string($value)) {
-			$sign = substr($value,0,1);
-			$val = intval(substr($value,1));
-			if ($sign == '+') {
-				$this->gauges[$key] += $val;
-			} elseif ($sign == '-') {
-				$this->gauges[$key] -= $val;
-			}
-		} else $this->gauges[$key] = $value;
-		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-		else unset($this->accuracies[$key]);
+	public function increment($key, $value = 1, $accuracy = 1)
+	{
+		self::$profile->increment($key, $value, $accuracy);
 	}
 
-	public function value($key, $value, $accuracy=1) {
-		$this->values[$key] = intval($value);
-		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-		else unset($this->accuracies[$key]);
+	public function gauge($key, $value, $accuracy = 1)
+	{
+		self::$profile->gauge($key, $value, $accuracy);
 	}
 
-	public function timer_start($key, $accuracy=1) {
-		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-		$this->timings[$key] = gettimeofday(true);
+	public function value($key, $value, $accuracy = 1)
+	{
+		self::$profile->value($key, $value, $accuracy);
 	}
 
-	public function timer_stop($key, $accuracy=1) {
-		if (isset($this->timings[$key])) {
-			if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-			$this->add($key, intval(1000*(gettimeofday(true) - $this->timings[$key])), 'ms');
-			unset($this->timings[$key]);
-		}
+	public function timer_start($key, $accuracy = 1)
+	{
+		self::$profile->timer_start($key, $accuracy);
 	}
 
-	public function timer_set($key, $value, $accuracy=1) {
-		if ($accuracy < 1) $this->accuracies[$key] = $accuracy;
-		$this->add($key, intval(1000 * $value), 'ms');
+	public function timer_stop($key, $accuracy = 1)
+	{
+		self::$profile->timer_stop($key, $accuracy);
 	}
 
-	private function add($key, $value, $type) {
-		$accuracy = isset($this->accuracies[$key]) ? $this->accuracies[$key] : 0;
-		$newKey = '';
-		if (defined('GRAPHITE_PREFIX')) {
-			$newKey .= constant('GRAPHITE_PREFIX').'.';
-		}
-		if (defined('SERVER_NAME')) {
-			$newKey .= constant('SERVER_NAME').'.';
-		}
-		$newKey .= str_replace(':','',$key);
-		// Не отсылать сообщения которые заканчиваются точкой!
-		if ($newKey !== trim($newKey, '.')) {
-			return;
-		}
-		if ($accuracy <=0 || $accuracy >= 1 || (mt_rand(0, mt_getrandmax()) / mt_getrandmax()) <= $accuracy) {
-			$this->data[]= sprintf("%s:%s|%s%s", $newKey, strval($value), $type, $accuracy ? '|@'.$accuracy : '');
-		}
+	public function timer_set($key, $value, $accuracy = 1)
+	{
+		self::$profile->timer_set($key, $value, $accuracy);
 	}
 
-	public function setDebug($debug=false) {
-		$this->debug = $debug;
+	private function add($key, $value, $type)
+	{
+		self::$profile->add($key, $value, $type);
 	}
 
-	public function flush(&$data) {
-		if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() called");
-		foreach ($this->timings  as $key => $_)	$this->timer_stop($key);
-		foreach ($this->counters as $key => $value) $this->add($key, $value, 'c');
-		foreach ($this->values 	 as $key => $value) $this->add($key, $value, 's');
-		foreach ($this->gauges 	 as $key => $value) $this->add($key, $value, 'g');
+	public function setDebug($debug = false)
+	{
+		self::$profile->setDebug($debug);
+	}
 
-		if (!$this->data) {
-			$this->data = $this->counters = $this->values = $this->accuracies = $this->gauges = [];
-			return;
-		}
-		$data = $this->data;
-		if (defined('STATSD_HOST') && constant('STATSD_HOST')) {
-			try {
-				$fp = fsockopen("udp://" . constant('STATSD_HOST'), constant('STATSD_PORT'), $errno, $errstr);
-				if (!$fp) {
-					error_log(sprintf('Connecting to the statsd socket failed %s %s', $errno, $errstr));
-					return;
-				}
-				if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Connect");
-				foreach ($this->data as $message) {
-					$res = fwrite($fp, $message);
-					if ($this->debug) {
-						error_log(
-							sprintf("Send to statsd %s message: '%s'", constant('STATSD_HOST') . ':' . constant('STATSD_PORT'), $message)
-						);
-					}
-					if ($res <= 0 || $res !== strlen($message)) {
-						error_log(sprintf('Error sending %s to the statsd socket', trim($message)));
-					}
-				}
-				if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Send Data to Statsd");
-				fclose($fp);
-			} catch (\Exception $e) {
-				error_log(sprintf('Error sending to the statsd socket [%s]', $e->getMessage()));
-			}
-		} else {
-			if ($this->debug) error_log("AKEB\profiler\StatsdProfile->flush() Error: Not defined STATSD_HOST");
-		}
-		// очищаем
-		$this->data = $this->counters = $this->values = $this->accuracies = $this->gauges = [];
+	public function flush(&$data)
+	{
+		self::$profile->flush($data);
 	}
 }

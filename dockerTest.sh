@@ -25,6 +25,7 @@ for version in ${versions}; do
 
 	CMD="${CMD} php ./vendor/bin/phpunit "
 	CMD="${CMD} --no-coverage"
+	CMD="${CMD} --process-isolation"
 	CMD="${CMD} -c ./phpunit_${version}.xml"
 
 	docker run --rm -v "$PWD":/opt -w /opt akeb/nginx-php-fpm:${version} /bin/bash -c "${CMD}"
