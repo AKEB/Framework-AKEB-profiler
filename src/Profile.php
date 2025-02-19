@@ -7,6 +7,9 @@
  * STATSD_HOST
  * STATSD_PORT
  *
+ * PROFILER_FORMATTER=StatsdFormatter::class - formatting class
+ * [PROFILER_FORMATTER_OPTIONS]=[] - options for formatting class
+ *
  */
 
 namespace AKEB\profiler;
