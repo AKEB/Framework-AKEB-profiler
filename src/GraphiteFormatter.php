@@ -1,7 +1,6 @@
 <?php
 
 namespace AKEB\profiler;
-
 class GraphiteFormatter implements FormatterInterface
 {
 	/**
@@ -40,8 +39,8 @@ class GraphiteFormatter implements FormatterInterface
 		}
 		$tags = $this->tagsString;
 		if($this->tagOn){
-			$tags .= $accuracy ? ";accuracy=$accuracy" : '';
 			$tags .= $type ? ";type=$type" : '';
+			$tags .= $accuracy ? ";accuracy=$accuracy" : '';
 		}
 		return sprintf("%s%s %s %d", $newKey, $tags, $value, time());
 	}
