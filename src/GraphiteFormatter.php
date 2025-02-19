@@ -12,11 +12,12 @@ class GraphiteFormatter implements FormatterInterface
 	 */
 	private $prefix = '';
 	private $tagOn;
-	public function __construct(bool $tagOn=true)
+
+	public function __construct(bool $tagOn = true)
 	{
 		$this->tagOn = $tagOn;
 		if (defined('GRAPHITE_PREFIX')) {
-			$this->prefix .= constant('GRAPHITE_PREFIX').'.';
+			$this->prefix .= constant('GRAPHITE_PREFIX') . '.';
 		}
 
 		if (!defined('SERVER_NAME')) {
@@ -24,21 +25,21 @@ class GraphiteFormatter implements FormatterInterface
 		}
 		if ($tagOn) {
 			$this->tagsString .= ';server=' . constant('SERVER_NAME');
-		}
-		else{
-			$this->prefix .=  constant('SERVER_NAME') . '.';
+		} else {
+			$this->prefix .= constant('SERVER_NAME') . '.';
 		}
 	}
 
-	public function format($key, $value, $type, $accuracy = 1): ?string{
+	public function format($key, $value, $type, $accuracy = 1): ?string
+	{
 		$newKey = $this->prefix;
-		$newKey .= str_replace(':','',$key);
+		$newKey .= str_replace(':', '', $key);
 		// Не отсылать сообщения которые заканчиваются точкой!
 		if ($newKey !== trim($newKey, '.')) {
 			return null;
 		}
 		$tags = $this->tagsString;
-		if($this->tagOn){
+		if ($this->tagOn) {
 			$tags .= $type ? ";type=$type" : '';
 			$tags .= $accuracy ? ";accuracy=$accuracy" : '';
 		}

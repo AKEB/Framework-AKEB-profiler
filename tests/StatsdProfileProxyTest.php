@@ -5,14 +5,17 @@ use \AKEB\profiler\Profile;
 
 error_reporting(E_ALL);
 
-class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase {
+class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase
+{
 
-	protected function setUp(): void {
-		if (!defined('GRAPHITE_PREFIX')) define('GRAPHITE_PREFIX','prefix');
-		if (!defined('SERVER_NAME')) define('SERVER_NAME','local');
+	protected function setUp(): void
+	{
+		if (!defined('GRAPHITE_PREFIX')) define('GRAPHITE_PREFIX', 'prefix');
+		if (!defined('SERVER_NAME')) define('SERVER_NAME', 'local');
 	}
 
-	protected function tearDown(): void {
+	protected function tearDown(): void
+	{
 		pf_flush();
 	}
 
@@ -27,7 +30,8 @@ class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase {
 		$this->assertEquals(StatsdProfile::getInstance(), Profile::getInstance());
 	}
 
-	function test_proxy_methods(){
+	function test_proxy_methods()
+	{
 		$statsdProfile = new StatsdProfile();
 		$profile = Profile::getInstance();
 		$this->assertNotEquals($statsdProfile, $profile);
@@ -77,24 +81,25 @@ class StatsdProfileProxyTest extends PHPUnit\Framework\TestCase {
 		$t = explode("|", $statsdValue[0]);
 		$t = explode(':', $t[0]);
 		if (version_compare(PHP_VERSION, '7.2', '<')) {
-			$this->assertEquals(10,$t[1], '', 3);
+			$this->assertEquals(10, $t[1], '', 3);
 		} else {
-			$this->assertEqualsWithDelta(10,$t[1], 3);
+			$this->assertEqualsWithDelta(10, $t[1], 3);
 		}
 	}
 
-	function test_inc() {
+	function test_inc()
+	{
 		$profile = new StatsdProfile();
 
 		pf_inc('test1');
 		$data = [];
 		$profile->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test1:1|c');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX') . '.' . constant('SERVER_NAME') . '.test1:1|c');
 
 		pf_inc('test2', 4);
 		pf_inc('test2', 3);
 		$data = [];
 		$profile->flush($data);
-		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX').'.'.constant('SERVER_NAME').'.test2:7|c');
+		$this->assertEquals($data[0], constant('GRAPHITE_PREFIX') . '.' . constant('SERVER_NAME') . '.test2:7|c');
 	}
 }
