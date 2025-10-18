@@ -1,0 +1,8 @@
+/examples/ export-ignore
+/docker export-ignore
+/.vscode export-ignore
+/.github export-ignore
+/.* export-ignore
+/*.sh export-ignore
+/phpunit_*.xml export-ignore
+/tests/ export-ignore
